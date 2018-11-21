@@ -16,12 +16,18 @@ parserConf = ParserConf
 
 main :: IO ()
 main = do
-  [prefix, file] <- getArgs
+  (prefix1 : prefix2' : z) <- getArgs
+  let (prefix2, file) =
+        case z of
+          [] -> (prefix1, prefix2')
+          [f] -> (prefix2', f)
+
+
   Right latex <- parseLaTeXFileWith parserConf file
-  let (result, jobs) = frack prefix latex
+  let (result, jobs) = frack prefix2 latex
 
   for_ (zip [0..] jobs) $ \(i, job) ->
-    TIO.writeFile (prefix ++ show i ++ ".tex")
+    TIO.writeFile (prefix1 ++ show i ++ ".tex")
       . render
       $ getMathJob job
 
