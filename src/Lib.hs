@@ -55,7 +55,7 @@ blowoutMath prefix =
            . FixArg
            . TeXRaw
            . pack
-           $ prefix ++ show v ++ "." ++ show a
+           $ prefix ++ show v ++ "." ++ show a ++ ".tex"
 
 
 frack :: String -> Latex -> (Latex, [MathJob])
