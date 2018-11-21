@@ -22,7 +22,9 @@ I'm very tired.
 
 ```bash
 $ math-frack frack-me-baby book.tex > fracked-book.tex
-frack-me-baby0.tex frack-me-baby1.tex frack-me-baby2.tex
+$ ls
+book.tex           fracked-book.tex   frack-me-baby0.tex
+frack-me-baby1.tex frack-me-baby2.tex
 ```
 
 You can also pass in two parameters before the file if you want your fracked
