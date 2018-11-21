@@ -21,12 +21,18 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- HaTeX
+- transformers
+- mtl
+- containers
+- text
+- generic-recursion-schemes
 
 library:
   source-dirs: src
 
 executables:
-  math-fracking-exe:
+  math-frack:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
