@@ -21,13 +21,18 @@ I'm very tired.
 ## Usage
 
 ```bash
-$ math-frack frack-me-baby book.tex > fracked-book.tex
+$ math-frack injection.tex frack-me-baby book.tex > fracked-book.tex
 $ ls
-book.tex           fracked-book.tex   frack-me-baby0.tex
-frack-me-baby1.tex frack-me-baby2.tex
+book.tex                        fracked-book.tex
+frack-me-baby0.Dollar.tex       frack-me-baby1.Dollar.tex
+frack-me-baby2.DoubleDollar.tex injection.tex
 ```
 
 You can also pass in two parameters before the file if you want your fracked
 math to have a different file name than the `\input`s. Like if you wanted to run
 them through `mjpage` to statically compile the math for example...
+
+`mjpage` is sorta stupid and doesn't know anything about the context, so you can
+use `injection.tex` to include the contents of a file into all of the generated
+output.
 

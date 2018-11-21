@@ -47,7 +47,7 @@ blowoutMath prefix =
     isMath (TeXMath _ _) = True
     isMath _             = False
 
-    makeInput = const $ do
+    makeInput = \(TeXMath a _) -> do
       v <- get
       modify (+1)
       pure . TeXComm "input"
@@ -55,7 +55,7 @@ blowoutMath prefix =
            . FixArg
            . TeXRaw
            . pack
-           $ prefix ++ show v
+           $ prefix ++ show v ++ "." ++ show a
 
 
 frack :: String -> Latex -> (Latex, [MathJob])
