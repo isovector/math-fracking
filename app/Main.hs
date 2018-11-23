@@ -1,43 +1,42 @@
 module Main where
 
-import Data.Foldable
-import Lib
+import           Data.Foldable
 import qualified Data.Text.IO as TIO
-import System.Environment
-import Text.LaTeX.Base.Parser
-import Text.LaTeX.Base.Render
-import Text.LaTeX.Base.Syntax
+import           Lib
+import           System.Environment
+import           Text.LaTeX.Base.Parser
+import           Text.LaTeX.Base.Render
+import           Text.LaTeX.Base.Syntax
 
 
 parserConf :: ParserConf
 parserConf = ParserConf
-  { verbatimEnvironments = ["code", "verbatim", "lstlisting"]
+  { verbatimEnvironments = ["code", "verbatim", "lstlisting", "dorepl"]
   }
 
 
 main :: IO ()
 main = do
-  (ifile : prefix1 : prefix2' : z) <- getArgs
-  let (prefix2, file) =
+  (ifile : given : taken' : z) <- getArgs
+  let (taken, file) =
         case z of
-          [] -> (prefix1, prefix2')
-          [f] -> (prefix2', f)
+          [] -> (given, taken')
+          [f] -> (taken', f)
 
   Right injected <- parseLaTeXFileWith parserConf ifile
   Right latex <- parseLaTeXFileWith parserConf file
-  let (result, jobs) = frack prefix2 latex
+  let (result, jobs) = frack given taken latex
 
-  for_ (zip [0..] jobs) $ \(i, job@(MathJob (TeXMath a _))) ->
-    TIO.writeFile (prefix1 ++ show i ++ "." ++ show a ++ ".tex")
+  for_ jobs $ \(MathJob fn l) ->
+    TIO.writeFile fn
       . render
-      . getMathJob
-      $ inject job injected
+      $ inject l injected
 
   TIO.putStrLn $ render result
 
 
-inject :: MathJob -> Latex -> MathJob
-inject (MathJob (TeXMath a b)) l =
-  MathJob $ TeXMath a $ TeXSeq l b
+inject :: Latex -> Latex -> Latex
+inject (TeXMath a b) l =
+  TeXMath a $ TeXSeq l b
 
 

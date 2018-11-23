@@ -6,8 +6,7 @@
 
 module Lib where
 
-import Control.Applicative
-import Control.Monad.State
+import Control.Monad.RWS
 import Data.Text (pack)
 import Text.LaTeX
 import Text.LaTeX.Base.Syntax
@@ -15,49 +14,38 @@ import Text.LaTeX.Base.Syntax
 type Latex = LaTeX
 
 
-newtype MathJob = MathJob { getMathJob :: Latex }
+data MathJob = MathJob
+  { mathJobGiven :: FilePath
+  , getMathJob :: Latex
+  }
 
 
-extractMath :: Latex -> [MathJob]
-extractMath (TeXRaw _)         = []
-extractMath (TeXComm _ ns)     = extractMath =<< extractArgs =<< ns
-extractMath (TeXCommS _)       = []
-extractMath (TeXEnv _ ns t)    = extractMath =<< ((++ [t]) . extractArgs) =<< ns
-extractMath t@(TeXMath _ _)    = pure $ MathJob t
-extractMath (TeXLineBreak _ _) = []
-extractMath (TeXBraces t)      = extractMath t
-extractMath (TeXComment _)     = []
-extractMath (TeXSeq a b)       = extractMath =<< [a, b]
-extractMath (TeXEmpty)         = []
-
-extractArgs :: TeXArg -> [Latex]
-extractArgs (FixArg t)  = pure t
-extractArgs (OptArg t)  = pure t
-extractArgs (MOptArg t) = t
-extractArgs (SymArg t)  = pure t
-extractArgs (MSymArg t) = t
-extractArgs (ParArg t)  = pure t
-extractArgs (MParArg t) = t
+runRWS' :: Monoid w => s -> RWS () w s a -> (a, w)
+runRWS' s m =
+  let (a, _, w) = runRWS m () s
+   in (a, w)
 
 
-blowoutMath :: String -> Latex -> Latex
-blowoutMath prefix =
-    fst . flip runState (0 :: Int) . texmapM isMath makeInput
+frack :: String -> String -> Latex -> (Latex, [MathJob])
+frack given taken =
+    runRWS' (0 :: Int) . texmapM isMath makeInput
   where
     isMath (TeXMath _ _) = True
     isMath _             = False
 
-    makeInput = \(TeXMath a _) -> do
+    getName prefix v a = prefix ++ show v ++ "." ++ show a ++ ".tex"
+
+    makeInput job@(TeXMath a _) = do
       v <- get
       modify (+1)
+      let givenName = getName given v a
+          takenName = getName taken v a
+
+      tell . pure $ MathJob givenName job
       pure . TeXComm "input"
            . pure
            . FixArg
            . TeXRaw
-           . pack
-           $ prefix ++ show v ++ "." ++ show a ++ ".tex"
+           $ pack takenName
 
-
-frack :: String -> Latex -> (Latex, [MathJob])
-frack prefix = liftA2 (,) (blowoutMath prefix) extractMath
 
